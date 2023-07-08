@@ -1,47 +1,15 @@
-from function import process_audio_file
-from google.cloud import speech
-import os
-import io
-from google.auth import credentials
-from google.oauth2 import service_account
-import google.cloud.aiplatform as aiplatform
-from google.cloud.speech_v2 import SpeechClient
-from google.cloud.speech_v2.types import cloud_speech
-from vertexai.preview.language_models import ChatModel, InputOutputTextPair
+from function import process_audio_file, get_transcript
 from vertexai.preview.language_models import TextGenerationModel
 import vertexai
 import json
-
-# Setting Google credentials
-os.environ['GOOGLE_APPLICATION_CREDENTIALS'] = 'google_secret.json'
-
-# Create client instance
-client = speech.SpeechClient()
+from google.oauth2 import service_account
+import google.cloud.aiplatform as aiplatform
 
 # The path of your audio file
 file_name = "test_audio.wav"
 output_format = 'mp3'
 
 channels, duration, sample_width, sample_rate, channels_count, output_path = process_audio_file(file_name, output_format)
-
-with io.open(output_path, "rb") as audio_file:
-    content = audio_file.read()
-    audio = speech.RecognitionAudio(content=content)
-
-config = speech.RecognitionConfig(
-    encoding=speech.RecognitionConfig.AudioEncoding.LINEAR16,
-    enable_automatic_punctuation=True,
-    audio_channel_count=1,
-    language_code="en-US",
-)
-
-# Sends the request to Google to transcribe the audio
-response = client.recognize(request={"config": config, "audio": audio})
-
-# Read the transcript from the response
-transcript = ""
-for result in response.results:
-    transcript += result.alternatives[0].transcript
 
 with open("service_account.json") as f:
     service_account_info = json.load(f)
@@ -58,7 +26,7 @@ with open("service_account.json", encoding="utf-8") as f:
 # Initialize Vertex AI with project and location
 vertexai.init(project=project_id, location="us-central1")
 
-def handle_chat(transcript, temperature=0.2):
+def handle_chat(temperature=0.2):
     """
     Endpoint to handle chat.
     Receives a message from the user, processes it, and returns a response from the model.
@@ -71,10 +39,17 @@ def handle_chat(transcript, temperature=0.2):
         "top_k": 40,
     }
 
-    # Use the transcript as input for model.predict
-    response = model.predict(transcript, **parameters)
-    print(f"Response from Model: {response.text}")
-    return {"response": response.text}
-
-if __name__ == "__main__":
-    handle_chat(transcript)
+    # Extract the transcript using the get_transcript function
+    transcript = get_transcript(output_path)
+    transcript_text = " ".join(transcript)
+    
+    if transcript is not None:
+        print(transcript_text)
+        response = model.predict(
+            f"what's going on in the context:\n\n{transcript_text}",
+            **parameters,
+        )
+        print(f"Response from Model: {response.text}")
+        return {"response": response.text}
+    else:
+        return {"response": "No transcript found."}
