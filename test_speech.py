@@ -34,6 +34,6 @@ def get_transcript(file_name):
 
 
 
-# if __name__== "__main__":
-#     audio='test_audio.wav'
-#     get_transcript(audio)
+if __name__== "__main__":
+    audio='test_audio.wav'
+    get_transcript(audio)

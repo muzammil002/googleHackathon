@@ -23,19 +23,18 @@ def process_audio_file(file_path, output_format='wav'):
     # Return the extracted channels and basic information
     return channels, duration, sample_width, sample_rate, channels_count, output_path
 
-# Example usage
-file_path = 'test_audio.wav'
-output_format = 'mp3'
+# # Example usage
+# file_path = 'test_audio.wav'
+# output_format = 'mp3'
 
-channels, duration, sample_width, sample_rate, channels_count, output_path = process_audio_file(file_path, output_format)
+# channels, duration, sample_width, sample_rate, channels_count, output_path = process_audio_file(file_path, output_format)
 
-print("Channels:", channels)
-print("Duration:", duration)
-print("Sample Width:", sample_width)
-print("Sample Rate:", sample_rate)
-print("Channels Count:", channels_count)
-print("Output Path:", output_path)
-
+# print("Channels:", channels)
+# print("Duration:", duration)
+# print("Sample Width:", sample_width)
+# print("Sample Rate:", sample_rate)
+# print("Channels Count:", channels_count)
+# print("Output Path:", output_path)
 
 
 
@@ -67,3 +66,8 @@ def get_transcript(file_name):
         transcripts.append("{}".format(result.alternatives[0].transcript))
         
     return transcripts
+
+
+
+if __name__== "__main__":
+    get_transcript()
